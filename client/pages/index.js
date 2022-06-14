@@ -1,7 +1,69 @@
 import Head from "next/head";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+
 import styles from "../styles/Home.module.css";
 
 export default function Home() {
+  const [tasks, setTasks] = useState([]);
+  const [isLoading, setLoading] = useState(false);
+  const APIBaseUrl = "http://localhost:3000/api/v1/tasks";
+
+  useEffect(() => {
+    loadAllTasks();
+  }, []);
+
+  const loadAllTasks = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${APIBaseUrl}`, {
+        method: "GET",
+      });
+      const data = await response.json();
+      console.log(data);
+      setTasks(data);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const addTask = async (event) => {
+    try {
+      event.preventDefault();
+      const taskName = event.target.taskNameInput.value;
+      await fetch(`${APIBaseUrl}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        redirect: "follow",
+        referrerPolicy: "no-referrer",
+        body: JSON.stringify({
+          name: taskName,
+          completed: false,
+        }),
+      });
+
+      await loadAllTasks();
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const deleteTask = async (id) => {
+    try {
+      await fetch(`${APIBaseUrl}/${id}`, {
+        method: "DELETE",
+      });
+
+      await loadAllTasks();
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   return (
     <div className={styles.container}>
       <Head>
@@ -10,28 +72,74 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <main className={styles.main}>
-        <div className="task-list-wrapper">
-          <div className="flex items-center justify-between flex-wrap mb-6 p-6 bg-white rounded-lg border border-gray-200 shadow-md hover:bg-gray-100">
-            <h5 className="text-2xl font-bold tracking-tight text-gray-900">
-              Noteworthy technology acquisitions 2021
-            </h5>
-            <div class="flex space-x-3 pl-4">
-              <a
-                href="#"
-                class="inline-flex items-center py-2 px-4 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300"
-              >
-                Edit
-              </a>
-              <a
-                href="#"
-                class="inline-flex items-center py-2 px-4 text-sm font-medium text-center text-white bg-red-700 rounded-lg hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-gray-200"
-              >
-                Delete
-              </a>
-            </div>
+      <main className={`${styles.main} max-w-3xl mx-auto`}>
+        <div className="task-action-wrapper mb-8 w-full">
+          <div className="p-6 bg-white rounded-lg border border-gray-200 shadow-md">
+            <h4 className="text-3xl font-bold tracking-wide text-gray-900 text-center mb-4">
+              Task Manager
+            </h4>
+
+            <form className="w-full" onSubmit={addTask}>
+              <div className="flex items-center border-b border-gray-400 py-2">
+                <input
+                  className="appearance-none bg-transparent border-none w-full text-gray-700 mr-3 py-1 px-2 leading-tight focus:outline-none"
+                  type="text"
+                  placeholder="Enter Task Name"
+                  aria-label="Task name"
+                  required
+                  name="taskNameInput"
+                  id="taskNameInput"
+                />
+                <button
+                  className="flex-shrink-0 bg-blue-600 hover:bg-blue-900 text-sm text-white py-2 px-3 rounded"
+                  type="submit"
+                >
+                  Add Task
+                </button>
+              </div>
+            </form>
           </div>
         </div>
+
+        {!isLoading ? (
+          <div className="task-list-wrapper w-full">
+            {tasks?.map((item) => (
+              <div
+                key={item._id}
+                className="flex items-center justify-between flex-wrap mb-6 p-6 bg-white rounded-lg border border-gray-200 shadow-md hover:bg-gray-100"
+              >
+                <h5 className="text-2xl tracking-tight text-gray-900">
+                  {item.name}
+                  {item.completed ? (
+                    <span className="text-green-700 text-sm ml-2 font-bold tracking-wide">
+                      (DONE)
+                    </span>
+                  ) : (
+                    <span className="text-pink-700 text-sm ml-2 font-bold tracking-wide">
+                      (TO DO)
+                    </span>
+                  )}
+                </h5>
+                <div className="flex space-x-3 pl-4">
+                  <Link href={`/edit-task?taskId=${item._id}`}>
+                    <a className="inline-flex items-center py-2 px-4 text-sm font-medium text-center text-white bg-gray-700 rounded  hover:bg-gray-600 focus:ring-4 focus:outline-none focus:ring-blue-300">
+                      Edit
+                    </a>
+                  </Link>
+
+                  <div
+                    onClick={() => deleteTask(item._id)}
+                    className="inline-flex items-center py-2 px-4 text-sm font-medium text-center text-white bg-red-700 rounded  hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-gray-200"
+                  >
+                    Delete
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center">Loading...</div>
+        )}
       </main>
     </div>
   );
