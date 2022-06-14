@@ -16,7 +16,7 @@ const getTask = async (req, res) => {
     const { id: taskId } = req.params;
     const task = await Task.findById({ _id: taskId });
     if (!task) {
-      res.send(404).json({ message: "Task not found" });
+      res.status(404).json({ message: "Task not found" });
     }
     res.status(201).json(task);
   } catch (error) {
@@ -43,7 +43,7 @@ const updateTask = async (req, res) => {
       runValidators: true,
     });
     if (!task) {
-      res.send(404).json({ message: "Task not found" });
+      res.status(404).json({ message: "Task not found" });
     }
     res.status(200).json({ success: true, task });
   } catch (error) {
@@ -57,7 +57,7 @@ const deleteTask = async (req, res) => {
     const { id: taskId } = req.params;
     const task = await Task.findOneAndDelete({ _id: taskId });
     if (!task) {
-      res.send(404).json({ message: "Task not found" });
+      res.status(404).json({ message: "Task not found" });
     }
     res.status(200).json({ sucess: true });
   } catch (error) {
