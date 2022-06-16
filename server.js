@@ -51,4 +51,7 @@ app.use(express.json());
 app.use(cors());
 app.use("/api/v1/tasks", tasks);
 
-app.listen(PORT, console.log(`server is listening in ${PORT}`));
+app.listen(
+  PORT,
+  console.log(`View server on http://localhost:${PORT}/api-docs `)
+);
