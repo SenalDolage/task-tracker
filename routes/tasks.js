@@ -21,7 +21,7 @@ const {
  *        properties:
  *         name:
  *          type: string
- *          description: The name of the Task,
+ *          description: The name of the Task.
  *         completed:
  *          type: boolean
  *          description: The status of the Task.
